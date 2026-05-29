@@ -66,8 +66,16 @@ sws/
 │   │   ├── eventRoutes.js
 │   │   ├── notificationRoutes.js
 │   │   └── uploadRoutes.js
+│   ├── tests/
+│   │   ├── health.test.js
+│   │   ├── upload.test.js
+│   │   ├── documents.test.js
+│   │   └── notifications.test.js
 │   ├── uploads/
+│   ├── app.js
 │   ├── server.js
+│   ├── sse.js
+│   ├── vitest.config.js
 │   └── package.json
 ├── frontend/
 │   ├── index.html
@@ -152,7 +160,25 @@ sws/
 3. `cd ../backend && npm run dev`
 4. `cd ../frontend && npm run dev`
 
+## Testing
+
+The backend includes a full automated test suite using **Vitest** and **Supertest**.
+
+```bash
+cd backend
+npm test
+```
+
+**Test coverage** (18 tests across 4 files):
+
+| File | Tests | Coverage |
+|---|---|---|
+| `health.test.js` | 2 | Health endpoint, 404 handling |
+| `upload.test.js` | 6 | No-file, single PDF, non-PDF rejection, multi-file, batch, DB error |
+| `documents.test.js` | 3 | List docs, empty list, DB error |
+| `notifications.test.js` | 7 | List, mark-read, mark-all-read, 404, DB errors |
+
 ## Notes
 
 - This repository is the first commit of the assessment project.
-- The plan focuses on required features first, with optional tests added later.
+- All core features are implemented and tested.

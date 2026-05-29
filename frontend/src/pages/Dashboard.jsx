@@ -113,6 +113,13 @@ export default function Dashboard({ refreshKey }) {
 
   const isBulkUpload = uploads.length > 3;
 
+  const triggerFileInput = (e) => {
+    if (e.target.tagName === 'LABEL' || e.target.closest('label')) {
+      return;
+    }
+    document.getElementById('file-input-bulk')?.click();
+  };
+
   return (
     <div className="space-y-8">
       {/* Info Banner */}
@@ -129,7 +136,8 @@ export default function Dashboard({ refreshKey }) {
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
-        className={`rounded-2xl border-2 border-dashed p-12 text-center transition ${
+        onClick={triggerFileInput}
+        className={`rounded-2xl border-2 border-dashed p-12 text-center transition cursor-pointer ${
           isDragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-gray-50'
         }`}
       >
@@ -139,19 +147,28 @@ export default function Dashboard({ refreshKey }) {
         <h3 className="text-lg font-semibold text-slate-900">Drop files here or click to browse</h3>
         <p className="mt-2 text-sm text-slate-600">Any file type · Up to 20 MB per file</p>
 
+        {/* Input for single file selection */}
+        <input
+          type="file"
+          onChange={(e) => handleFiles(e.target.files)}
+          className="hidden"
+          id="file-input-single"
+        />
+
+        {/* Input for bulk file selection */}
         <input
           type="file"
           multiple
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
-          id="file-input"
+          id="file-input-bulk"
         />
 
         <div className="mt-6 flex justify-center gap-2">
-          <label htmlFor="file-input" className="cursor-pointer rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+          <label htmlFor="file-input-single" className="cursor-pointer rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
             Single file
           </label>
-          <label htmlFor="file-input" className="cursor-pointer rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">
+          <label htmlFor="file-input-bulk" className="cursor-pointer rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">
             Bulk upload
           </label>
           <span className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700">Try 4+ files to trigger notifications</span>

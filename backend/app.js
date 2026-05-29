@@ -1,0 +1,35 @@
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import uploadRoutes from './routes/uploadRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api/upload', uploadRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/events', eventRoutes);
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.message || err);
+  if (err.message === 'Only PDF files are allowed') {
+    return res.status(400).json({ message: err.message });
+  }
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+export default app;
