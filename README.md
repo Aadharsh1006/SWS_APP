@@ -83,6 +83,28 @@ sws/
 4. Add UI polish and responsive dashboard styling.
 5. Write unit tests after core functionality is complete.
 
+## Backend Setup
+
+1. Copy `backend/.env.example` to `backend/.env`.
+2. Set `MONGO_URI` to your MongoDB connection string, including the database name.
+   Example:
+   ```bash
+   MONGO_URI=mongodb+srv://<username>:<password>@cluster0.ugjba06.mongodb.net/document-dashboard?retryWrites=true&w=majority
+   ```
+3. In the `backend` folder, run `npm install`.
+4. Start the backend with `npm run dev`.
+
+> Note: Atlas may not show the database until the first document upload creates the collections.
+
+### Backend API Endpoints
+
+- `POST /api/upload` — upload one or more PDF files using `files` as the form field.
+- `GET /api/documents` — fetch all saved documents.
+- `GET /api/notifications` — fetch all stored notifications.
+- `PATCH /api/notifications/:id/read` — mark a notification as read.
+- `PATCH /api/notifications/read-all` — mark all notifications as read.
+- `GET /api/events` — open an SSE stream for real-time notifications.
+
 ## Initial Setup
 
 1. `cd backend && npm install`
