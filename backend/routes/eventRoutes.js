@@ -1,8 +1,10 @@
 import express from 'express';
+import { createSSEClient } from '../sse.js';
+
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.status(501).json({ message: 'SSE events endpoint not implemented yet' });
+  createSSEClient(res);
 });
 
 export default router;

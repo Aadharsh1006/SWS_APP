@@ -28,6 +28,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.message || err);
+  if (err.message === 'Only PDF files are allowed') {
+    return res.status(400).json({ message: err.message });
+  }
+  res.status(500).json({ message: 'Internal server error' });
+});
+
 connectDB();
 
 const PORT = process.env.PORT || 4000;
