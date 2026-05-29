@@ -13,6 +13,8 @@ const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 
+const activeBatches = new Map();
+
 const storage = multer.diskStorage({
   destination: uploadsDir,
   filename: (req, file, cb) => {
@@ -31,11 +33,14 @@ const upload = multer({
   }
 });
 
-router.post('/', upload.array('files'), async (req, res) => {
+router.post('/', upload.any(), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
+
+    const batchId = req.body.batchId;
+    const totalFiles = req.body.totalFiles ? Number(req.body.totalFiles) : 1;
 
     const documents = await Promise.all(
       req.files.map((file) => {
@@ -49,10 +54,27 @@ router.post('/', upload.array('files'), async (req, res) => {
       })
     );
 
-    if (req.files.length > 3) {
-      const message = `${req.files.length} files uploaded successfully`;
-      const notification = await Notification.create({ message, type: 'success' });
-      broadcastNotification(notification);
+    if (batchId) {
+      const batch = activeBatches.get(batchId) || { processedCount: 0, documents: [] };
+      batch.processedCount += documents.length;
+      batch.documents.push(...documents);
+      activeBatches.set(batchId, batch);
+
+      if (batch.processedCount >= totalFiles) {
+        if (totalFiles > 3) {
+          const message = `${totalFiles} files uploaded successfully`;
+          const notification = await Notification.create({ message, type: 'success' });
+          broadcastNotification(notification);
+        }
+        activeBatches.delete(batchId);
+      }
+    } else {
+      // Legacy or non-batched uploads
+      if (req.files.length > 3) {
+        const message = `${req.files.length} files uploaded successfully`;
+        const notification = await Notification.create({ message, type: 'success' });
+        broadcastNotification(notification);
+      }
     }
 
     return res.status(201).json({ documents });

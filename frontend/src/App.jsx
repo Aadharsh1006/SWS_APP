@@ -2,14 +2,32 @@ import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import Dashboard from './pages/Dashboard';
 import { startNotificationStream } from './services/sse';
+import api from './services/api';
+import NotificationPanel from './components/NotificationPanel';
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Fetch notifications from the backend
+  const loadNotifications = async () => {
+    try {
+      const response = await api.get('/notifications');
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
+  };
 
   useEffect(() => {
+    loadNotifications();
+
     const source = startNotificationStream(
       (notification) => {
         toast.success(notification.message || 'New notification received');
+        // Prepend new notification to state
+        setNotifications((prev) => [notification, ...prev]);
         setRefreshKey((prev) => prev + 1);
       },
       () => {
@@ -19,6 +37,29 @@ function App() {
 
     return () => source?.close();
   }, []);
+
+  const handleMarkRead = async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+      );
+    } catch (error) {
+      toast.error('Failed to mark notification as read');
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch('/notifications/read-all');
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      toast.success('All notifications marked as read');
+    } catch (error) {
+      toast.error('Failed to mark all as read');
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-white">
@@ -31,13 +72,35 @@ function App() {
                 <span className="text-lg font-bold text-white">📋</span>
               </div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900">SWS AI Document Hub</h1>
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-600">LIVE DEMO</span>
+                <h1 className="text-xl font-bold text-slate-900 font-sans">SWS AI Document Hub</h1>
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-600 font-sans">LIVE DEMO</span>
               </div>
             </div>
-            <button className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-gray-100">
-              <span className="text-xl">🔔</span>
-            </button>
+
+            {/* Bell Icon with badge & dropdown panel */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-gray-100 transition-colors"
+                aria-label="View notifications"
+              >
+                <span className="text-xl">🔔</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white animate-in scale-in duration-300">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <NotificationPanel
+                  notifications={notifications}
+                  onClose={() => setShowNotifications(false)}
+                  onMarkRead={handleMarkRead}
+                  onMarkAllRead={handleMarkAllRead}
+                />
+              )}
+            </div>
           </div>
         </div>
 

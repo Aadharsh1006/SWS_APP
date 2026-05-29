@@ -12,6 +12,48 @@
 
 ---
 
+## Database Schema & ERD
+
+```mermaid
+erDiagram
+    Document {
+        ObjectId _id PK
+        string fileName
+        number fileSize
+        string fileType
+        string filePath
+        string status
+        date uploadDate
+    }
+    Notification {
+        ObjectId _id PK
+        string message
+        string type
+        boolean read
+        date createdAt
+    }
+```
+
+#### Document Schema (MongoDB collection: `documents`)
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `fileName` | String | Yes | - | Original uploaded file name |
+| `fileSize` | Number | Yes | - | Size in bytes |
+| `fileType` | String | Yes | - | MIME type (e.g. `application/pdf`) |
+| `filePath` | String | Yes | - | Disk path relative to backend root |
+| `status` | String | No | `'completed'` | Upload status |
+| `uploadDate` | Date | No | `Date.now` | Creation timestamp |
+
+#### Notification Schema (MongoDB collection: `notifications`)
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `message` | String | Yes | - | Notification content |
+| `type` | String | No | `'info'` | Classification category (`'success'`, `'error'`, `'info'`) |
+| `read` | Boolean | No | `false` | Read tracking state |
+| `createdAt` | Date | No | `Date.now` | Creation timestamp |
+
+---
+
 ## Project Structure
 
 ```
